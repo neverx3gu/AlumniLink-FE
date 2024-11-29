@@ -1,5 +1,6 @@
 // src/components/board/PostDetail.js
 import React, { useState } from 'react';
+import { ThumbsUp } from 'lucide-react';  // 이 import 문을 추가
 
 export function PostDetail() {
   const [liked, setLiked] = useState(false);
@@ -47,13 +48,15 @@ export function PostDetail() {
         </div>
       </div>
 
+      {/* 좋아요 버튼 */}
       <div className="flex justify-center mb-8">
         <button
           onClick={() => setLiked(!liked)}
           className={`flex items-center gap-2 px-4 py-2 rounded-full ${
-            liked ? 'bg-red-100 text-red-500' : 'bg-gray-100'
+          liked ? 'bg-red-100 text-red-500' : 'bg-gray-100'
           }`}
         >
+          <ThumbsUp size={20} /> {/* 좋아요 아이콘 */}
           <span>LIKE</span>
         </button>
       </div>

@@ -1,30 +1,40 @@
+// src/components/auth/SignUpForm.js
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { api } from '../../services/api';
 
 export function SignUpForm() {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     nickname: '',
     password: '',
-    passwordConfirm: ''
+    confirmPassword: ''
   });
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  };
-
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (formData.password !== formData.passwordConfirm) {
-      alert('비밀번호가 일치하지 않습니다');
+    
+    if (formData.password !== formData.confirmPassword) {
+      alert('비밀번호가 일치하지 않습니다.');
       return;
     }
-    console.log('회원가입:', formData);
-    navigate('/login');
+
+    try {
+      const response = await api.signup({
+        nickname: formData.nickname,
+        password: formData.password
+      });
+
+      if (response) {
+        alert('회원가입이 완료되었습니다.');
+        navigate('/login');
+      } else {
+        alert('회원가입에 실패했습니다.');
+      }
+    } catch (error) {
+      console.error('Signup failed:', error);
+      alert('회원가입 중 오류가 발생했습니다.');
+    }
   };
 
   return (
@@ -38,34 +48,46 @@ export function SignUpForm() {
             type="text"
             name="nickname"
             value={formData.nickname}
-            onChange={handleChange}
+            onChange={(e) => setFormData(prev => ({
+              ...prev,
+              nickname: e.target.value
+            }))}
             className="w-full px-3 py-2 border rounded-md"
+            required
           />
         </div>
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            패스워드
+            비밀번호
           </label>
           <input
             type="password"
             name="password"
             value={formData.password}
-            onChange={handleChange}
+            onChange={(e) => setFormData(prev => ({
+              ...prev,
+              password: e.target.value
+            }))}
             className="w-full px-3 py-2 border rounded-md"
+            required
           />
         </div>
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            패스워드 확인
+            비밀번호 확인
           </label>
           <input
             type="password"
-            name="passwordConfirm"
-            value={formData.passwordConfirm}
-            onChange={handleChange}
+            name="confirmPassword"
+            value={formData.confirmPassword}
+            onChange={(e) => setFormData(prev => ({
+              ...prev,
+              confirmPassword: e.target.value
+            }))}
             className="w-full px-3 py-2 border rounded-md"
+            required
           />
         </div>
 
@@ -75,6 +97,16 @@ export function SignUpForm() {
         >
           회원가입
         </button>
+
+        <div className="text-center text-sm text-gray-600">
+          <button
+            type="button"
+            onClick={() => navigate('/login')}
+            className="hover:text-blue-500"
+          >
+            이미 계정이 있으신가요?
+          </button>
+        </div>
       </form>
     </div>
   );

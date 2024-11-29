@@ -9,9 +9,10 @@ export function Logo() {
       <img 
         src={logo}
         alt="AlumniLink" 
-        style={{ height: '180px' }}  // h-20(80px)과 h-21(84px) 사이의 값을 직접 지정
-        className="mx-auto mb-1 object-contain"
+        style={{ height: '120px' }}  // h-20(80px)과 h-21(84px) 사이의 값을 직접 지정
+        className="mx-auto mb-0.1 object-contain"
       />
+      <span className="text-sm text-gray-600">AlumniLink</span>
     </Link>
   );
 }

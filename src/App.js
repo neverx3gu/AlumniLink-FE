@@ -1,3 +1,4 @@
+// src/App.js
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import Home from './pages/Home';

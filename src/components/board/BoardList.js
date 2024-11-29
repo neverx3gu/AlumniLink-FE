@@ -1,43 +1,85 @@
-// src/components/board/BoardList.js
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { api } from '../../services/api';
 
 export function BoardList() {
   const navigate = useNavigate();
-  const posts = [
-    {
-      id: 1,
-      title: "디지털 마케팅과 핵심 원리와 성공 전략",
-      author: "홍길동",
-      createdAt: "24.11.22",
-      views: 4,
-      likes: 5
-    }
-  ];
+  const [posts, setPosts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedTag, setSelectedTag] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const postsPerPage = 10;
+
+  useEffect(() => {
+    const fetchPosts = async () => {
+      try {
+        const response = await api.getPosts();
+        setPosts(Array.isArray(response) ? response : []);
+      } catch (error) {
+        console.error('Failed to fetch posts:', error);
+        setPosts([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchPosts();
+  }, []);
+
+  if (loading) return <div>Loading...</div>;
+
+  const filteredPosts = selectedTag
+    ? posts.filter((post) => post.tag === selectedTag)
+    : posts;
+
+  const startIndex = (currentPage - 1) * postsPerPage;
+  const currentPosts = filteredPosts.slice(startIndex, startIndex + postsPerPage);
+  const totalPages = Math.ceil(filteredPosts.length / postsPerPage);
 
   return (
     <div className="max-w-4xl mx-auto p-4">
-      <div className="flex gap-2 mb-4">
-        <button className="px-4 py-2 rounded bg-gray-100 hover:bg-gray-200">#태그</button>
-        <button className="px-4 py-2 rounded bg-red-100 hover:bg-red-200">일반</button>
-        <button className="px-4 py-2 rounded bg-gray-100 hover:bg-gray-200">Tip</button>
-        <button className="px-4 py-2 rounded bg-gray-100 hover:bg-gray-200">정보</button>
+      {/* 태그 버튼 */}
+      <div className="flex items-center gap-4 mb-4">
+        <span className="text-gray-600 font-bold">#태그</span>
+        {['자유', '정보', '질문'].map((tag) => (
+          <button
+            key={tag}
+            onClick={() => {
+              setSelectedTag(tag);
+              setCurrentPage(1);
+            }}
+            className={`px-3 py-1 rounded ${
+              selectedTag === tag ? 'bg-red-100' : 'bg-gray-100'
+            } hover:bg-gray-200`}
+          >
+            {tag}
+          </button>
+        ))}
+        <button
+          onClick={() => {
+            setSelectedTag('');
+            setCurrentPage(1);
+          }}
+          className={`px-3 py-1 rounded ${
+            selectedTag === '' ? 'bg-red-100' : 'bg-gray-100'
+          } hover:bg-gray-200`}
+        >
+          전체
+        </button>
       </div>
 
+      {/* 게시글 테이블 */}
       <div className="border rounded-lg overflow-hidden">
         <table className="w-full">
           <thead className="bg-gray-50">
             <tr>
               <th className="px-4 py-2 text-left">번호</th>
               <th className="px-4 py-2 text-left">제목</th>
-              <th className="px-4 py-2 text-left">글쓴이</th>
+              <th className="px-4 py-2 text-left">작성자</th>
               <th className="px-4 py-2 text-left">작성일</th>
-              <th className="px-4 py-2 text-center">조회</th>
-              <th className="px-4 py-2 text-center">추천</th>
             </tr>
           </thead>
           <tbody>
-            {posts.map((post) => (
+            {currentPosts.map((post) => (
               <tr 
                 key={post.id} 
                 className="border-t hover:bg-gray-50 cursor-pointer"
@@ -45,24 +87,66 @@ export function BoardList() {
               >
                 <td className="px-4 py-2">{post.id}</td>
                 <td className="px-4 py-2">{post.title}</td>
-                <td className="px-4 py-2">{post.author}</td>
-                <td className="px-4 py-2">{post.createdAt}</td>
-                <td className="px-4 py-2 text-center">{post.views}</td>
-                <td className="px-4 py-2 text-center">{post.likes}</td>
+                <td className="px-4 py-2">{post.nickname}</td>
+                <td className="px-4 py-2">
+                  {new Date(post.startTime).toLocaleDateString()}
+                </td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
 
-      <div className="flex justify-center mt-4 gap-1">
-        {[1,2,3,4,5,6,7,8,9,10].map((page) => (
-          <button key={page} className="px-3 py-1 rounded hover:bg-gray-100">
-            {page}
+      {/* 페이지네이션 */}
+      <div className="flex justify-center items-center mt-4 gap-2">
+        {/* 처음으로 이동 */}
+        <button
+          onClick={() => setCurrentPage(1)}
+          className="px-3 py-1 rounded bg-gray-100 hover:bg-gray-200"
+          disabled={currentPage === 1}
+        >
+          &lt;&lt;
+        </button>
+        
+        {/* 이전으로 이동 */}
+        <button
+          onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+          className="px-3 py-1 rounded bg-gray-100 hover:bg-gray-200"
+          disabled={currentPage === 1}
+        >
+          &lt;
+        </button>
+
+        {/* 페이지 번호 */}
+        {[...Array(totalPages)].map((_, index) => (
+          <button
+            key={index + 1}
+            onClick={() => setCurrentPage(index + 1)}
+            className={`px-3 py-1 rounded ${
+              currentPage === index + 1 ? 'bg-red-100' : 'bg-gray-100'
+            } hover:bg-gray-200`}
+          >
+            {index + 1}
           </button>
         ))}
-        <span className="px-2">...</span>
-        <button className="px-3 py-1 rounded hover:bg-gray-100">999</button>
+
+        {/* 다음으로 이동 */}
+        <button
+          onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+          className="px-3 py-1 rounded bg-gray-100 hover:bg-gray-200"
+          disabled={currentPage === totalPages}
+        >
+          &gt;
+        </button>
+
+        {/* 끝으로 이동 */}
+        <button
+          onClick={() => setCurrentPage(totalPages)}
+          className="px-3 py-1 rounded bg-gray-100 hover:bg-gray-200"
+          disabled={currentPage === totalPages}
+        >
+          &gt;&gt;
+        </button>
       </div>
 
       <div className="text-right mt-4">
