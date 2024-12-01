@@ -10,6 +10,7 @@ export function AuthProvider({ children }) {
   // 초기 로딩 시 토큰 체크
   useEffect(() => {
     const storedToken = localStorage.getItem('token');
+    console.log(storedToken);
     if (storedToken) {
       const payloadBase64 = storedToken.split('.')[1];
       const decodedPayload = JSON.parse(decodeURIComponent(escape(atob(payloadBase64))));

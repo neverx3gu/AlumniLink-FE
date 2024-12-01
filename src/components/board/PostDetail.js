@@ -1,93 +1,65 @@
-// src/components/board/PostDetail.js
-import React, { useState } from 'react';
-import { ThumbsUp } from 'lucide-react';  // 이 import 문을 추가
+import React, { useState, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
+import { api } from '../../services/api';
 
 export function PostDetail() {
-  const [liked, setLiked] = useState(false);
-  const [commentContent, setCommentContent] = useState('');
-  const [comments, setComments] = useState([
-    {
-      id: 1,
-      author: '호빈우1827',
-      content: '가나다라마바사아자차카타파하',
-      createdAt: '24.11.19 14:36'
-    }
-  ]);
+  const { id } = useParams();
+  const [post, setPost] = useState(null);
+  const [comments, setComments] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const handleCommentSubmit = (e) => {
-    e.preventDefault();
-    if (!commentContent.trim()) return;
-
-    const newComment = {
-      id: comments.length + 1,
-      author: '호빈우1234',
-      content: commentContent,
-      createdAt: new Date().toLocaleDateString()
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        // 게시글과 댓글을 동시에 가져옴
+        const postData = await api.getPost(id);
+        const commentsData = await api.getComments(id); // 페이지 객체에서 content 추출
+        setPost(postData);
+        setComments(commentsData); // 댓글 목록 설정
+      } catch (error) {
+        console.error('Error:', error);
+        setError('데이터를 불러오는데 실패했습니다.');
+      } finally {
+        setLoading(false);
+      }
     };
 
-    setComments([...comments, newComment]);
-    setCommentContent('');
-  };
+    fetchData();
+  }, [id]);
+
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div>{error}</div>;
+  if (!post) return <div>게시글을 찾을 수 없습니다.</div>;
 
   return (
     <div className="max-w-4xl mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">
-        혁신적인 스타트업 아이디어:성공을 위한 핵심 전략
-      </h1>
+      <h1 className="text-2xl font-bold mb-4">{post.title}</h1>
       
       <div className="mb-8">
         <div className="flex justify-between text-sm text-gray-500 mb-4">
-          <span>호빈우1234</span>
-          <span>24.11.18 20:21</span>
+          <span>{post.nickname}</span>
+          <span>{new Date(post.startTime).toLocaleString()}</span>
         </div>
         
         <div className="prose max-w-none mb-8">
-          <p className="text-gray-800 whitespace-pre-line">
-            {/* 게시글 내용 */}
-          </p>
+          <p className="text-gray-800 whitespace-pre-line">{post.body}</p>
         </div>
       </div>
 
-      {/* 좋아요 버튼 */}
-      <div className="flex justify-center mb-8">
-        <button
-          onClick={() => setLiked(!liked)}
-          className={`flex items-center gap-2 px-4 py-2 rounded-full ${
-          liked ? 'bg-red-100 text-red-500' : 'bg-gray-100'
-          }`}
-        >
-          <ThumbsUp size={20} /> {/* 좋아요 아이콘 */}
-          <span>LIKE</span>
-        </button>
-      </div>
-
-      <div className="space-y-4 mb-6">
+      {/* <div className="space-y-4 mb-6">
         {comments.map((comment) => (
           <div key={comment.id} className="border-b pb-4">
             <div className="flex justify-between text-sm mb-2">
-              <span className="font-medium">{comment.author}</span>
-              <span className="text-gray-500">{comment.createdAt}</span>
+              <span className="font-medium">{comment.nickname}</span>
+              <span className="text-gray-500">
+                {new Date(comment.createdAt).toLocaleString()}
+              </span>
             </div>
-            <p>{comment.content}</p>
+            <p>{comment.body}</p>
           </div>
         ))}
-      </div>
-
-      <form onSubmit={handleCommentSubmit} className="flex gap-2">
-        <input
-          type="text"
-          value={commentContent}
-          onChange={(e) => setCommentContent(e.target.value)}
-          placeholder="댓글을 작성하세요"
-          className="flex-1 px-4 py-2 border rounded-lg"
-        />
-        <button
-          type="submit"
-          className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
-        >
-          작성
-        </button>
-      </form>
+      </div> */}
     </div>
   );
 }

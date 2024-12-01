@@ -12,7 +12,7 @@ export function PostCreate() {
   const [postData, setPostData] = useState({
     title: '',
     body: '',
-    tag: 'STUDY'  // 자유가 기본값
+    tag: 'FREE'  // 자유가 기본값
   });
 
   const handleSubmit = async (e) => {
@@ -46,10 +46,9 @@ export function PostCreate() {
             onChange={(e) => setPostData({...postData, tag: e.target.value})}
             className="px-4 py-2 border rounded"
           >
-            <option value="STUDY">STUDY</option>
-            {/* <option value="자유">자유</option>
-            <option value="정보">정보</option>
-            <option value="질문">질문</option> */}
+            <option value="FREE">자유</option>
+            <option value="INFORMATION">정보</option>
+            <option value="QUESTION">질문</option>
           </select>
         </div>
 

@@ -36,18 +36,12 @@ export const api = {
       console.error('Error fetching posts:', error);
       return [];
     }
-   }, 
+  }, 
 
-   async createPost(postData, token) {
-    console.log('전송 데이터:', postData); // 전송 전 데이터 확인
-    console.log('토큰:', token);
-    // console.log('보내는 데이터:', {
-    //   title: postData.title,
-    //   body: postData.body,
-    //   tag: postData.tag
-    // });
-    // console.log('Authorization 헤더:', `Bearer ${token}`);
-    
+  async createPost(postData, token) {
+    console.log('요청 전 토큰:', token);
+    console.log('요청 데이터:', postData);
+
     const response = await fetch(`${API_URL}/posts`, {
       method: 'POST',
       headers: {
@@ -60,8 +54,28 @@ export const api = {
         tag: postData.tag
       })
     });
+    
+    console.log('응답 상태:', response.status);
     const responseText = await response.text();
-    console.log('서버 응답:', responseText);
+    console.log('응답 내용:', responseText);
     return responseText;
+  },
+
+  async getPost(id) {
+      const response = await fetch(`${API_URL}/posts/${id}`);
+      return response.json();
+  },
+     
+  async getComments(postId, page = 0, size = 10, sort = 'string') {
+    try {
+      const response = await fetch(`http://13.124.134.43:8080/comment?postId=${postId}&page=${page}&size=${size}&sort=${sort}`);
+      const data = await response.json();
+      
+      // 페이지 객체에서 댓글 내용(content)을 추출하여 반환
+      return data.content; // 댓글 목록만 추출
+    } catch (error) {
+      console.error('Error fetching comments:', error);
+      return []; // 오류 발생 시 빈 배열 반환
+    }
   }
 };
